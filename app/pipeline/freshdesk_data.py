@@ -67,29 +67,7 @@ def get_all_ticket_details():
     print("Ticket details saved to ticket_details.csv")
 
 
-# Step 3: Get ticket associations
-def get_all_ticket_associations():
-    print("Fetching ticket associations")
-
-    tickets_df = pd.read_csv(os.path.join(DATA_DIR, "tickets.csv"))
-    ticket_associations = []
-
-    for ticket_id in tickets_df["id"]:
-        url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets/{ticket_id}/associations"
-        response = requests.get(url, headers=HEADERS, auth=AUTH)
-        if response.status_code == 200:
-            associations = response.json()
-            associations["ticket_id"] = ticket_id
-            ticket_associations.append(associations)
-        # time.sleep(0.5)  # Avoid rate limiting
-
-    df = pd.DataFrame(ticket_associations)
-    df.to_csv(os.path.join(DATA_DIR, "ticket_associations.csv"), index=False)
-    print("Ticket associations saved to ticket_associations.csv")
-
-
 if __name__ == "__main__":
     # Execute data fetching
     get_all_tickets(30)
     get_all_ticket_details()
-    get_all_ticket_associations()
