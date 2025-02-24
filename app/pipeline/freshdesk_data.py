@@ -20,20 +20,47 @@ HEADERS = {"Authorization": f"Basic {FRESHDESK_API_KEY}"}
 AUTH = (FRESHDESK_API_KEY, "X")
 
 
-def get_all_tickets(limit: int = None):
+def get_all_tickets(per_page: int = 100):
+    headers = {"Content-Type": "application/json"}
+
+    tickets = []
+    page = 1
+    skipped_count = 0
+
+    while True:
+        url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets?page={page}&per_page={per_page}&updated_since=2000-01-19T02:00:00Z&include=description"
+        response = requests.get(url, headers=headers, auth=(FRESHDESK_API_KEY, "X"))
+
+        if response.status_code != 200:
+            print(f"Error: {response.status_code}")
+            break
+
+        data = response.json()
+        tickets.extend(data)
+        print(f"📥 Pulled {len(data)} tickets from page {page}", end="\n")
+
+        page += 1
+
+    df = pd.DataFrame(tickets)
+    df.to_csv(os.path.join(DATA_DIR, "tickets.csv"), index=False)
+    print("Tickets data saved to tickets.csv")
+
+
+def get_tickets_with_limit(limit: int = None):
     print(f"Fetching {limit} tickets")
 
     tickets = []
     page = 1
-    per_page = 30
+    per_page = 100
 
     if limit:
         per_page = min(per_page, limit)
         page = max(1, limit // per_page)
 
     while len(tickets) < limit:
-
-        url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets?page={page}&per_page=30"
+        url = (
+            f"https://{FRESHDESK_DOMAIN}/api/v2/tickets?page={page}&per_page={per_page}"
+        )
         response = requests.get(url, headers=HEADERS, auth=AUTH)
         if response.status_code != 200:
             break
@@ -69,5 +96,5 @@ def get_all_ticket_details():
 
 if __name__ == "__main__":
     # Execute data fetching
-    get_all_tickets(30)
+    get_all_tickets()
     get_all_ticket_details()
