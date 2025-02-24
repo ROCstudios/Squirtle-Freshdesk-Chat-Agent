@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import dotenv
 import os
+import time
 
 # Get the directory of the current script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -27,7 +28,9 @@ def get_all_tickets(per_page: int = 100):
     page = 1
     skipped_count = 0
 
-    while True:
+    recent_data_count = 1
+
+    while recent_data_count > 0:
         url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets?page={page}&per_page={per_page}&updated_since=2000-01-19T02:00:00Z&include=description"
         response = requests.get(url, headers=headers, auth=(FRESHDESK_API_KEY, "X"))
 
@@ -38,6 +41,7 @@ def get_all_tickets(per_page: int = 100):
         data = response.json()
         tickets.extend(data)
         print(f"📥 Pulled {len(data)} tickets from page {page}", end="\n")
+        recent_data_count = len(data)
 
         page += 1
 
@@ -82,12 +86,18 @@ def get_all_ticket_details():
     tickets_df = pd.read_csv(os.path.join(DATA_DIR, "tickets.csv"))
     ticket_details = []
 
+    print(f"Fetched {len(tickets_df)} ticket details")
+
     for ticket_id in tickets_df["id"]:
         url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets/{ticket_id}"
         response = requests.get(url, headers=HEADERS, auth=AUTH)
+
         if response.status_code == 200:
+            print(f"Ticket {ticket_id} fetched successfully")
             ticket_details.append(response.json())
-        # time.sleep(0.5)  # Avoid rate limiting
+        else:
+            print(f"Error fetching ticket {ticket_id}: {response.status_code}")
+        time.sleep(0.5)  # Avoid rate limiting
 
     df = pd.DataFrame(ticket_details)
     df.to_csv(os.path.join(DATA_DIR, "ticket_details.csv"), index=False)
@@ -96,5 +106,5 @@ def get_all_ticket_details():
 
 if __name__ == "__main__":
     # Execute data fetching
-    get_all_tickets()
+    # get_all_tickets()
     get_all_ticket_details()
