@@ -31,7 +31,7 @@ def get_all_tickets(per_page: int = 100):
     recent_data_count = 1
 
     while recent_data_count > 0:
-        url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets?page={page}&per_page={per_page}&updated_since=2000-01-19T02:00:00Z&include=description"
+        url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets?page={page}&per_page={per_page}&updated_since=2000-01-19T02:00:00Z&include=description,created_at,updated_at, source, priority, status, spam, fr_escalated, is_escalated"
         response = requests.get(url, headers=headers, auth=(FRESHDESK_API_KEY, "X"))
 
         if response.status_code != 200:
@@ -107,4 +107,5 @@ def get_all_ticket_details():
 if __name__ == "__main__":
     # Execute data fetching
     # get_all_tickets()
-    get_all_ticket_details()
+    # get_all_ticket_details()
+    print("toaster")
