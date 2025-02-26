@@ -5,7 +5,7 @@ import dotenv
 import argparse
 import requests
 import os
-from app.datastore.db import upload_to_pinecone, json_to_documents
+from app.ui.db import upload_to_pinecone, json_to_documents
 from bs4 import BeautifulSoup
 import re
 import json
