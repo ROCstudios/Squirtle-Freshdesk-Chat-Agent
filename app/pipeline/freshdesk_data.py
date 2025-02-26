@@ -31,7 +31,7 @@ def get_all_tickets(per_page: int = 100):
     recent_data_count = 1
 
     while recent_data_count > 0:
-        url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets?page={page}&per_page={per_page}&updated_since=2000-01-19T02:00:00Z&include=description,created_at,updated_at, source, priority, status, spam, fr_escalated, is_escalated"
+        url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets?page={page}&per_page={per_page}&updated_since=2000-01-19T02:00:00Z"
         response = requests.get(url, headers=headers, auth=(FRESHDESK_API_KEY, "X"))
 
         if response.status_code != 200:
@@ -88,7 +88,12 @@ def get_all_ticket_details():
 
     print(f"Fetched {len(tickets_df)} ticket details")
 
-    for ticket_id in tickets_df["id"]:
+    # Reverse the order of ticket IDs to process from bottom up
+    reversed_ticket_ids = tickets_df["id"].iloc[::-1]
+    for ticket_id in reversed_ticket_ids:
+        if ticket_id > 4220:
+            break
+
         url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets/{ticket_id}"
         response = requests.get(url, headers=HEADERS, auth=AUTH)
 
@@ -97,7 +102,7 @@ def get_all_ticket_details():
             ticket_details.append(response.json())
         else:
             print(f"Error fetching ticket {ticket_id}: {response.status_code}")
-        time.sleep(0.5)  # Avoid rate limiting
+        # time.sleep(0.5)  # Avoid rate limiting
 
     df = pd.DataFrame(ticket_details)
     df.to_csv(os.path.join(DATA_DIR, "ticket_details.csv"), index=False)
@@ -107,5 +112,4 @@ def get_all_ticket_details():
 if __name__ == "__main__":
     # Execute data fetching
     # get_all_tickets()
-    # get_all_ticket_details()
-    print("toaster")
+    get_all_ticket_details()
