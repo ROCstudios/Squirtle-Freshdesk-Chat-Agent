@@ -21,3 +21,5 @@ chromadb
 pinecone
 langchain-pinecone
 beautifulsoup4
+langchain-experimental
+tabulate
