@@ -5,7 +5,9 @@ from pinecone import ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from langchain_openai import OpenAIEmbeddings
 from langchain.docstore.document import Document
-from typing import List, Dict
+from typing import List, Dict, Optional
+from datetime import datetime
+
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -86,21 +88,6 @@ def json_to_documents(json_data: List[Dict]) -> List[Document]:
     return documents, ids
 
 
-def test_pinecone_data():
-    """Test that data is properly stored in Pinecone"""
-    # Get index statistics
-    stats = index.describe_index_stats()
-    print(f"Total vectors in index: {stats['total_vector_count']}")
-
-    # Test a sample query
-    query = "high priority tickets"
-    vectordb = Pinecone.from_existing_index(
-        index_name=index_name, embedding=OpenAIEmbeddings()
-    )
-
-    results = vectordb.similarity_search(query, k=2)  # Number of results to return
-
-    print("\nSample search results:")
-    for doc in results:
-        print(f"\nContent: {doc.page_content}")
-        print(f"Metadata: {doc.metadata}")
+if __name__ == "__main__":
+    # test_pinecone_data()
+    print("Need method to run")

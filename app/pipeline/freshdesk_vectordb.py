@@ -5,12 +5,19 @@ import dotenv
 import argparse
 import requests
 import os
-from app.ui.db import upload_to_pinecone, json_to_documents
+from app.agents.db import upload_to_pinecone, json_to_documents
 from bs4 import BeautifulSoup
 import re
-import json
+import pandas as pd
 
 dotenv.load_dotenv()
+
+# Get the directory of the current script
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Get the project root directory (one level up from script directory)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+# Define data directory
+DATA_DIR = os.path.join(PROJECT_ROOT, "app/data")
 
 api_key = os.getenv("FRESHDESK_API_KEY")
 domain = os.getenv("FRESHDESK_DOMAIN")
@@ -76,6 +83,53 @@ def paginate_all_tickets_to_pinecone(per_page: int = 25):
     print(f"Skipped {skipped_count} tickets due to errors")
     print(f"Total tickets fetched: {len(tickets)}")
     return tickets
+
+
+def get_most_recent_tickets_append_to_vector_db():
+    updated_from = get_most_recent_updated_at_from_csv()
+    if updated_from:
+        url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets?updated_since={updated_from.isoformat()}"
+        response = requests.get(url, headers=HEADERS, auth=AUTH)
+
+        if response.status_code == 200:
+            tickets = response.json()
+            df = pd.DataFrame(tickets)
+            complete_ticket_details_file = os.path.join(
+                DATA_DIR, "../data/complete_ticket_details.csv"
+            )
+            if os.path.exists(complete_ticket_details_file):
+                df.to_csv(
+                    complete_ticket_details_file, mode="a", header=False, index=False
+                )
+            else:
+                df.to_csv(complete_ticket_details_file, index=False)
+            print("Appended new tickets to complete_ticket_details.csv")
+
+            # Convert tickets to documents and upload to vector database
+            docs, ids = json_to_documents(tickets)
+            store = upload_to_pinecone(docs, ids)
+            print(f"📦 New tickets added to vector database successfully")
+            print(store)
+        else:
+            print(f"Error fetching tickets: {response.status_code}")
+            return []
+
+
+def get_most_recent_updated_at_from_csv():
+    df = pd.read_csv(os.path.join(DATA_DIR, "complete_ticket_details.csv"))
+    df["updated_at"] = pd.to_datetime(
+        df["updated_at"], errors="coerce"
+    )  # Convert to datetime, coerce errors
+    df = df.sort_values(
+        by="updated_at", ascending=False
+    )  # Sort by created_at in descending order
+    if not df.empty:
+        first_row = df.iloc[0]
+        print(first_row["updated_at"])
+        return first_row["updated_at"]
+    else:
+        print("DataFrame is empty")
+        return None
 
 
 # Example usage
