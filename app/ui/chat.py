@@ -13,10 +13,11 @@ from langchain.chains import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 import os
 import dotenv
+from app.datastore.update_flag import GlobalFlagUpdater
 
 dotenv.load_dotenv()
 
-nlp = spacy.load("en_core_web_sm")
+updater = GlobalFlagUpdater()
 
 st.set_page_config(page_title="Alpine Reports", page_icon="🏆")
 if st.button("Clear message history", key="clear_button"):

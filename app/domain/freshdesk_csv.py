@@ -34,13 +34,20 @@ def get_all_tickets(per_page: int = 100, save: bool = True):
 
     while recent_data_count > 0:
         url = f"https://{FRESHDESK_DOMAIN}/api/v2/tickets?page={page}&per_page={per_page}&updated_since=2000-01-19T02:00:00Z"
-        response = requests.get(url, headers=headers, auth=(FRESHDESK_API_KEY, "X"))
+        try:
+            response = requests.get(url, headers=headers, auth=(FRESHDESK_API_KEY, "X"))
 
-        if response.status_code != 200:
-            print(f"Error: {response.status_code}")
+            if response.status_code != 200:
+                print(f"Error: {response.status_code}")
+                break
+
+            data = response.json()
+
+        except Exception as e:
+            print(f"Error: {e}")
+            skipped_count += per_page
             break
 
-        data = response.json()
         tickets.extend(data)
         print(f"📥 Pulled {len(data)} tickets from page {page}", end="\n")
         recent_data_count = len(data)
@@ -84,8 +91,10 @@ def get_tickets_with_limit(
         return tickets
 
 
-def get_all_ticket_details(file_path: str, save: bool = True):
-    tickets_df = pd.read_csv(os.path.join(DATA_DIR, file_path))
+def get_all_ticket_details(
+    source_file_path: str, details_file_path: str, save: bool = True
+):
+    tickets_df = pd.read_csv(os.path.join(DATA_DIR, source_file_path))
     ticket_details = []
 
     print(f"Fetched {len(tickets_df)} ticket details")
@@ -100,20 +109,21 @@ def get_all_ticket_details(file_path: str, save: bool = True):
         # time.sleep(0.5)  # Avoid rate limiting
 
     if save:
-        save_to_csv(ticket_details, "ticket_details.csv")
-        return ticket_details
+        save_to_csv(ticket_details, details_file_path)
+        return details_file_path
     else:
-        return ticket_details
+        return details_file_path
 
 
-def get_most_recent_tickets_to_append(file_path):
-    updated_from = get_most_recently_updated_date(file_path)
+def get_most_recent_tickets_to_append(file_path: str = "complete_ticket_details.csv"):
+    csv_path = os.path.join(DATA_DIR, file_path)
+    updated_from = get_most_recently_updated_date(csv_path)
     if updated_from:
         response = get_all_tickets(updated_since=updated_from.isoformat())
 
         if response.status_code == 200:
-            append_to_csv(response, file_path)
-            return response
+            append_to_csv(response, csv_path)
+            return csv_path
         else:
             print(f"Error fetching tickets: {response.status_code}")
-            return []
+            return None

@@ -20,13 +20,28 @@ def save_to_csv(data, file_path):
 
 
 def append_to_csv(data, file_path):
-    df = pd.DataFrame(data)
-    csv_file = os.path.join(DATA_DIR, file_path)
-    if os.path.exists(csv_file):
-        df.to_csv(csv_file, mode="a", header=False, index=False)
-    else:
-        df.to_csv(csv_file, index=False)
-    print("Appended new tickets to complete_ticket_details.csv")
+    csv_file_path = os.path.join(DATA_DIR, file_path)
+    # Load existing tickets from the CSV file
+    try:
+        existing_df = pd.read_csv(csv_file_path)
+    except FileNotFoundError:
+        existing_df = (
+            pd.DataFrame()
+        )  # Create an empty DataFrame if the file does not exist
+
+    # Create a DataFrame from the new tickets
+    new_df = pd.DataFrame(data)
+
+    # Concatenate the existing tickets with the new tickets
+    combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+
+    # Sort the combined DataFrame by the 'id' field to maintain order
+    combined_df = combined_df.sort_values(by="id")
+
+    # Save the combined DataFrame to the CSV file
+    combined_df.to_csv(csv_file_path, index=False)
+
+    return csv_file_path
 
 
 def get_most_recently_updated_date(file_path):
