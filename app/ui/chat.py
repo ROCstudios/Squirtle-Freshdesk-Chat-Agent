@@ -7,8 +7,8 @@ from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.chains import ConversationalRetrievalChain
 from consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE, REPHRASE_PROMPT
-from app.agents.handlers import PrintRetrievalHandler, StreamHandler
-from app.agents.retriever_routing import configure_retriever, get_static_files
+from app.ui.handlers import PrintRetrievalHandler, StreamHandler
+from app.ui.retriever_routing import configure_retriever, get_static_files
 from langchain.chains import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 import os

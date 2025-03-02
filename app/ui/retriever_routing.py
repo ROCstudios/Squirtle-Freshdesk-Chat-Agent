@@ -6,7 +6,7 @@ from langchain.prompts import PromptTemplate
 from langchain.agents import AgentExecutor
 from langchain_openai import OpenAI
 from typing import List, Dict
-from db import vector_store
+from app.core.db_core import vector_store
 import streamlit as st
 import pandas as pd
 import os

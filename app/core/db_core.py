@@ -51,8 +51,8 @@ vector_store = PineconeVectorStore(index=index, embedding=embeddings)
 
 def upload_to_pinecone(docs, ids):
     """Upload JSON data to Pinecone and return the index"""
-    uploads = vector_store.add_documents(documents=docs, ids=ids)
-    return uploads
+    vector_store.add_documents(documents=docs, ids=ids)
+    return vector_store
 
 
 def json_to_documents(json_data: List[Dict]) -> List[Document]:
