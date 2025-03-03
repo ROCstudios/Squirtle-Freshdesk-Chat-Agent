@@ -100,8 +100,6 @@ combine_docs_chain = StuffDocumentsChain(
     ),
 )
 
-rephrase_prompt = PromptTemplate.from_template(REPHRASE_PROMPT)
-
 question_generator = LLMChain(llm=llm, prompt=rephrase_prompt)
 
 ########################################################
@@ -172,20 +170,16 @@ if user_query := st.chat_input(placeholder="Ask me anything!"):
         response = custom_chain.invoke(user_query)
         print("🚀 ~ response:1", response)
 
-        rephrase_prompt = PromptTemplate.from_template(
-            "Given the following conversation and a follow-up message, rephrase the message to be a standalone statement that captures all relevant context from the chat history.{input}"
-        )
-        print("🚀 ~ rephrase_prompt:", rephrase_prompt)
         chat_retriever_chain = create_history_aware_retriever(
             llm, chosen_retriever, rephrase_prompt
         )
 
-        response = chat_retriever_chain.invoke(
-            {"input": user_query, "chat_history": msgs.messages}
-        )
-        print("🚀 ~ response2:", response)
-        # response = custom_chain(
-        #     {"question": user_query}, callbacks=[retrieval_handler, stream_handler]
+        # response = chat_retriever_chain.invoke(
+        #     {"input": user_query, "chat_history": msgs.messages}
         # )
-
-        # msgs.add_ai_message(response["answer"])
+        response = chat_retriever_chain(
+            {"input": user_query, "chat_history": msgs.messages},
+            callbacks=[retrieval_handler, stream_handler],
+        )
+        print("🚀 ~ final response:", response)
+        msgs.add_ai_message(response["answer"])
