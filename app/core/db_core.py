@@ -16,7 +16,7 @@ api_key = os.environ.get("PINECONE_API_KEY")
 openai_api_key = os.environ.get("OPENAI_API_KEY") or "OPENAI_API_KEY"
 model_name = "text-embedding-ada-002"
 
-index_name = "freshdesk-tickets-v1"
+index_name = "test-freshdesk-tickets"
 # configure client
 pc = Pinecone(api_key=api_key)
 cloud = os.environ.get("PINECONE_CLOUD") or "aws"

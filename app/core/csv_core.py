@@ -10,6 +10,11 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 DATA_DIR = os.path.join(PROJECT_ROOT, "app/data")
 
 
+def get_tickets_from_csv(file_path):
+    df = pd.read_csv(os.path.join(DATA_DIR, file_path))
+    return df.to_dict(orient="records")
+
+
 def save_to_csv(data, file_path):
     df = pd.DataFrame(data)
     ticket_file = os.path.join(DATA_DIR, file_path)

@@ -1,4 +1,3 @@
-import spacy
 import streamlit as st
 from langchain.prompts import ChatPromptTemplate, PromptTemplate
 from langchain.chat_models import ChatOpenAI
@@ -6,23 +5,56 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.chains import ConversationalRetrievalChain
-from consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE, REPHRASE_PROMPT
+from app.consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE, REPHRASE_PROMPT
 from app.ui.handlers import PrintRetrievalHandler, StreamHandler
-from app.ui.retriever_routing import configure_retriever, get_static_files
+from app.ui.retriever_routing import (
+    route_query_with_llm,
+    get_doc_retriever_agent,
+    get_pandas_agent,
+)
 from langchain.chains import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 import os
 import dotenv
 from app.datastore.update_flag import GlobalFlagUpdater
+import sys
+import os
+from langchain_core.output_parsers.openai_tools import PydanticToolsParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import ChatOpenAI
+from langchain_core.runnables import chain
+from langchain_core.pydantic_v1 import BaseModel, Field
+from typing import List
+
+
+class QueryClassifier(BaseModel):
+    """Determine whether the query is quantitative or qualitative."""
+
+    query: str = Field(
+        ...,
+        description="Query to look up",
+    )
+
+    query_type: str = Field(
+        ..., description="The type of query. Should be 'quantitative' or 'qualitative'."
+    )
+
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 
 dotenv.load_dotenv()
 
 updater = GlobalFlagUpdater()
 
-st.set_page_config(page_title="Alpine Reports", page_icon="🏆")
+st.set_page_config(page_title="Alpine Reports", page_icon="🗻")
 if st.button("Clear message history", key="clear_button"):
     st.session_state.clear_messages = True
 st.title("Alpine Reports")
+
+st.sidebar.title("Sidebar Title")
+if st.sidebar.button("Click Me"):
+    st.sidebar.write("Button clicked!")
 
 # Setup memory for contextual conversation
 msgs = StreamlitChatMessageHistory()
@@ -33,10 +65,12 @@ memory = ConversationBufferMemory(
     output_key="answer",
 )
 
-if "retriever" not in st.session_state:
-    st.session_state.retriever = configure_retriever(st.session_state.static_files)
+if "docs_retriever" not in st.session_state:
+    st.session_state.docs_retriever = get_doc_retriever_agent()
 
-retriever = st.session_state.retriever
+if "pandas_retriever" not in st.session_state:
+    st.session_state.pandas_retriever = get_pandas_agent()
+
 
 # Setup LLM and QA chain
 llm = ChatOpenAI(
@@ -67,14 +101,54 @@ rephrase_prompt = PromptTemplate.from_template(REPHRASE_PROMPT)
 
 question_generator = LLMChain(llm=llm, prompt=rephrase_prompt)
 
-qa_chain = ConversationalRetrievalChain(
-    retriever=st.session_state.retriever,
-    combine_docs_chain=combine_docs_chain,
-    question_generator=question_generator,
-    memory=memory,
-    return_source_documents=True,
-    verbose=True,
+########################################################
+
+prompter = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "You have the ability to choose between two retrievers. One is a pandas retriever and the other is a docs retriever. You will be given a question and you will need to decide which retriever to use.",
+        ),
+        ("human", "{question}"),
+    ]
 )
+
+structured_llm = llm.with_structured_output(QueryClassifier)
+
+query_analyzer = (
+    {
+        "question": RunnablePassthrough(),
+    }
+    | prompter
+    | structured_llm
+)
+
+retrievers = {
+    "quantitative": st.session_state.pandas_retriever,
+    "qualitative": st.session_state.docs_retriever,
+}
+
+
+@chain
+def custom_chain(question: str):
+    response = query_analyzer.invoke(question)
+    print("🚀 ~ response:", response)
+    retriever = retrievers[response.query_type]
+    return retriever.invoke(response.query)
+
+
+custom_chain = custom_chain
+
+########################################################
+
+# qa_chain = ConversationalRetrievalChain(
+#     retriever=None,
+#     combine_docs_chain=combine_docs_chain,
+#     question_generator=question_generator,
+#     memory=memory,
+#     return_source_documents=True,
+#     verbose=True,
+# )
 
 if len(msgs.messages) == 0 or st.session_state.get("clear_messages", False):
     msgs.clear()
@@ -88,18 +162,18 @@ for msg in msgs.messages:
 if user_query := st.chat_input(placeholder="Ask me anything!"):
     st.chat_message("user").write(user_query)
 
-    # Process query to remove person names
-    doc = nlp(user_query)
-    processed_query = " ".join(
-        [token.text for token in doc if token.ent_type_ != "PERSON"]
-    )
-
     with st.chat_message("assistant"):
         retrieval_handler = PrintRetrievalHandler(st.container())
         stream_handler = StreamHandler(st.empty())
 
-        response = qa_chain(
-            {"question": processed_query}, callbacks=[retrieval_handler, stream_handler]
-        )
+        response = custom_chain.invoke(user_query)
+        print("🚀 ~ response:", response)
+
+        # selected_retriever = route_query_with_llm(user_query)
+        # qa_chain.retriever = selected_retriever
+
+        # response = qa_chain(
+        #     {"question": user_query}, callbacks=[retrieval_handler, stream_handler]
+        # )
 
         msgs.add_ai_message(response["answer"])

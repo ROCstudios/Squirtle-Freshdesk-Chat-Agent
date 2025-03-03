@@ -6,10 +6,11 @@ from langchain.prompts import PromptTemplate
 from langchain.agents import AgentExecutor
 from langchain_openai import OpenAI
 from typing import List, Dict
-from db import vector_store
+from app.core.csv_core import get_tickets_from_csv
 import streamlit as st
 import pandas as pd
 import os
+
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -26,17 +27,21 @@ pandas_agent = None
 docs_agent = None
 
 
-def get_pandas_agent(file_path: str):
+def get_pandas_agent(file_path: str = os.path.join(data_dir, "test_dataset.csv")):
     global pandas_agent
     if pandas_agent is None:
         pandas_agent = configure_retriever_from_pandas(file_path)
     return pandas_agent
 
 
-def get_doc_retriever_agent():
+def get_doc_retriever_agent(
+    ticket_details: List[Dict] = get_tickets_from_csv(
+        os.path.join(data_dir, "test_dataset.csv")
+    )
+):
     global docs_agent
     if docs_agent is None:
-        docs_agent = configure_retriever_from_docs()
+        docs_agent = configure_retriever_from_docs(ticket_details)
     return docs_agent
 
 
@@ -97,21 +102,3 @@ def process_query(query: str) -> None:
         result = retriever.invoke(query)
         print("Document Retriever Result")
         return result
-
-
-pandas_agent = configure_retriever_from_pandas()
-docs_agent = configure_retriever_from_docs()
-
-
-if __name__ == "__main__":
-    # retriever = configure_retriever_from_json()
-    # query_retriever(retriever, "What is the status of most of our tickets?")
-    test_queries = [
-        "Can you tell me how many tickets come from email vs chat?",
-        "What is the status of most of our tickets?",
-        "What are common customer complaints?",
-    ]
-
-    for query in test_queries:
-        print(f"\nProcessing query: '{query}'")
-        print(process_query(query))
