@@ -45,14 +45,6 @@ def get_doc_retriever_agent(
     return docs_agent
 
 
-def route_query_with_llm(query: str) -> AgentExecutor:
-    classification = llm(routing_prompt.format(query=query)).strip()
-    if "quantitative" in classification:
-        return pandas_agent
-    else:
-        return docs_agent
-
-
 @st.cache_resource
 def configure_retriever_from_pandas(file_path: str):
     tickets_details_df = pd.read_csv(file_path)
@@ -79,26 +71,3 @@ def configure_retriever_from_docs(ticket_details: List[Dict]):
     )
 
     return retriever
-
-
-def process_query(query: str) -> None:
-    """
-    Routes the query to the appropriate retriever and executes it.
-
-    Args:
-        query (str): The user query to process.
-    """
-    # Route to the appropriate retriever
-    retriever = route_query_with_llm(query)
-
-    # Execute the query based on retriever type
-    if isinstance(retriever, AgentExecutor):
-        # For pandas_agent (AgentExecutor)
-        result = retriever.invoke({"input": query})
-        print("Pandas Agent Result")
-        return result
-    else:
-        # For doc_retriever_agent (Runnable retriever)
-        result = retriever.invoke(query)
-        print("Document Retriever Result")
-        return result

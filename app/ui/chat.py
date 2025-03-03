@@ -8,7 +8,6 @@ from langchain.chains import ConversationalRetrievalChain
 from app.consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE, REPHRASE_PROMPT
 from app.ui.handlers import PrintRetrievalHandler, StreamHandler
 from app.ui.retriever_routing import (
-    route_query_with_llm,
     get_doc_retriever_agent,
     get_pandas_agent,
 )
@@ -26,6 +25,10 @@ from langchain_openai import ChatOpenAI
 from langchain_core.runnables import chain
 from langchain_core.pydantic_v1 import BaseModel, Field
 from typing import List
+from langchain.chains import create_history_aware_retriever
+from langchain import hub
+
+rephrase_prompt = hub.pull("langchain-ai/chat-langchain-rephrase")
 
 
 class QueryClassifier(BaseModel):
@@ -134,10 +137,10 @@ def custom_chain(question: str):
     response = query_analyzer.invoke(question)
     print("🚀 ~ response:", response)
     retriever = retrievers[response.query_type]
-    return retriever.invoke(response.query)
+    return retriever
 
 
-custom_chain = custom_chain
+chosen_retriever = custom_chain
 
 ########################################################
 
@@ -167,13 +170,22 @@ if user_query := st.chat_input(placeholder="Ask me anything!"):
         stream_handler = StreamHandler(st.empty())
 
         response = custom_chain.invoke(user_query)
-        print("🚀 ~ response:", response)
+        print("🚀 ~ response:1", response)
 
-        # selected_retriever = route_query_with_llm(user_query)
-        # qa_chain.retriever = selected_retriever
+        rephrase_prompt = PromptTemplate.from_template(
+            "Given the following conversation and a follow-up message, rephrase the message to be a standalone statement that captures all relevant context from the chat history.{input}"
+        )
+        print("🚀 ~ rephrase_prompt:", rephrase_prompt)
+        chat_retriever_chain = create_history_aware_retriever(
+            llm, chosen_retriever, rephrase_prompt
+        )
 
-        # response = qa_chain(
+        response = chat_retriever_chain.invoke(
+            {"input": user_query, "chat_history": msgs.messages}
+        )
+        print("🚀 ~ response2:", response)
+        # response = custom_chain(
         #     {"question": user_query}, callbacks=[retrieval_handler, stream_handler]
         # )
 
-        msgs.add_ai_message(response["answer"])
+        # msgs.add_ai_message(response["answer"])
