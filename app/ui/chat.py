@@ -91,9 +91,9 @@ combine_docs_chain = StuffDocumentsChain(
     ),
 )
 
-rephrase_prompt = hub.pull("langchain-ai/chat-langchain-rephrase")
-
-question_generator = LLMChain(llm=llm, prompt=rephrase_prompt)
+question_generator = LLMChain(
+    llm=llm, prompt=PromptTemplate.from_template(REPHRASE_PROMPT)
+)
 
 ########################################################
 
@@ -176,14 +176,15 @@ retrievers = {
 
 
 # @chain
-def custom_chain(question: str):
+def custom_chain(question: str, retrieval_handler, stream_handler):
     response = query_analyzer.invoke(question)
     retriever = retrievers[response.query_type]
 
     if response.query_type == "quantitative":
-        return retriever
+        retriever_response = retriever.invoke(question)
+        return retriever_response
     else:
-        return ConversationalRetrievalChain(
+        qa_chain = ConversationalRetrievalChain(
             retriever=retriever,
             combine_docs_chain=combine_docs_chain,
             question_generator=question_generator,
@@ -191,6 +192,10 @@ def custom_chain(question: str):
             return_source_documents=True,
             verbose=True,
         )
+        response = qa_chain(
+            {"question": question}, callbacks=[retrieval_handler, stream_handler]
+        )
+        return response
 
 
 qa_system_prompt = ChatPromptTemplate.from_messages(
@@ -227,9 +232,10 @@ if user_query := st.chat_input(placeholder="Ask me anything!"):
         retrieval_handler = PrintRetrievalHandler(st.container())
         stream_handler = StreamHandler(st.empty())
 
-        raw_retriever_response = custom_chain(user_query)
-        print("🚀 ~ type of retriever response:", type(raw_retriever_response))
-        print("🚀 ~ retriever response:", raw_retriever_response.invoke(user_query))
+        raw_retriever_response = custom_chain(
+            user_query, retrieval_handler, stream_handler
+        )
+        print("🚀 ~ type of retriever response:", raw_retriever_response)
 
         # response = qa_chain.invoke(
         #     {
