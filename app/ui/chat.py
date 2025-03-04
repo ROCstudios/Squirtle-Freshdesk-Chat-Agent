@@ -181,8 +181,11 @@ def custom_chain(question: str, retrieval_handler, stream_handler):
     retriever = retrievers[response.query_type]
 
     if response.query_type == "quantitative":
-        retriever_response = retriever.invoke(question)
-        return retriever_response
+        response = retriever(
+            question,
+            callbacks=[retrieval_handler, stream_handler],
+        )
+        return response
     else:
         qa_chain = ConversationalRetrievalChain(
             retriever=retriever,
@@ -232,10 +235,8 @@ if user_query := st.chat_input(placeholder="Ask me anything!"):
         retrieval_handler = PrintRetrievalHandler(st.container())
         stream_handler = StreamHandler(st.empty())
 
-        raw_retriever_response = custom_chain(
-            user_query, retrieval_handler, stream_handler
-        )
-        print("🚀 ~ type of retriever response:", raw_retriever_response)
+        response = custom_chain(user_query, retrieval_handler, stream_handler)
+        print("🚀 ~retriever response:", response)
 
         # response = qa_chain.invoke(
         #     {
@@ -246,4 +247,4 @@ if user_query := st.chat_input(placeholder="Ask me anything!"):
         # )
 
         # print("🚀 ~ final response:", response)
-        # msgs.add_ai_message(response["text"])
+        msgs.add_ai_message(response["answer"])
