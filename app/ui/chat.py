@@ -6,7 +6,12 @@ from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.chains import ConversationalRetrievalChain
 from app.consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE, REPHRASE_PROMPT
-from app.ui.handlers import PrintRetrievalHandler, StreamHandler
+from app.ui.handlers import (
+    PrintRetrievalHandler,
+    StreamHandler,
+    PrintPandasAgentHandler,
+    StreamPandasAgentHandler,
+)
 from app.ui.retriever_routing import (
     get_doc_retriever_agent,
     get_pandas_agent,
@@ -18,19 +23,12 @@ import dotenv
 from app.datastore.update_flag import GlobalFlagUpdater
 import sys
 import os
-from langchain_core.output_parsers.openai_tools import PydanticToolsParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI
-from langchain_core.runnables import chain
 from langchain_core.pydantic_v1 import BaseModel, Field
-from typing import List
-from langchain.chains import create_history_aware_retriever
-from langchain import hub
 from langchain.prompts import MessagesPlaceholder
-from langchain.chains import create_retrieval_chain
 from langchain.schema.output_parser import StrOutputParser
-
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 
@@ -176,17 +174,22 @@ retrievers = {
 
 
 # @chain
-def custom_chain(question: str, retrieval_handler, stream_handler):
+def custom_chain(question: str):
     response = query_analyzer.invoke(question)
     retriever = retrievers[response.query_type]
 
     if response.query_type == "quantitative":
+        handlers = [
+            PrintPandasAgentHandler(st.container()),
+            StreamPandasAgentHandler(st.empty()),
+        ]
         response = retriever(
             question,
-            callbacks=[retrieval_handler, stream_handler],
+            callbacks=handlers,
         )
-        return response
+        return response["output"]
     else:
+        handlers = [PrintRetrievalHandler(st.container()), StreamHandler(st.empty())]
         qa_chain = ConversationalRetrievalChain(
             retriever=retriever,
             combine_docs_chain=combine_docs_chain,
@@ -195,10 +198,8 @@ def custom_chain(question: str, retrieval_handler, stream_handler):
             return_source_documents=True,
             verbose=True,
         )
-        response = qa_chain(
-            {"question": question}, callbacks=[retrieval_handler, stream_handler]
-        )
-        return response
+        response = qa_chain({"question": question}, callbacks=handlers)
+        return response["answer"]
 
 
 qa_system_prompt = ChatPromptTemplate.from_messages(
@@ -232,10 +233,8 @@ if user_query := st.chat_input(placeholder="Ask me anything!"):
     st.chat_message("user").write(user_query)
 
     with st.chat_message("assistant"):
-        retrieval_handler = PrintRetrievalHandler(st.container())
-        stream_handler = StreamHandler(st.empty())
 
-        response = custom_chain(user_query, retrieval_handler, stream_handler)
+        response = custom_chain(user_query)
         print("🚀 ~retriever response:", response)
 
         # response = qa_chain.invoke(
@@ -246,5 +245,4 @@ if user_query := st.chat_input(placeholder="Ask me anything!"):
         #     callbacks=[retrieval_handler, stream_handler],
         # )
 
-        # print("🚀 ~ final response:", response)
-        msgs.add_ai_message(response["answer"])
+        msgs.add_ai_message(response)

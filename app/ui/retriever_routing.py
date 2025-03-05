@@ -3,7 +3,6 @@ from app.domain.freshdesk_vectordb import (
 )
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 from langchain.prompts import PromptTemplate
-from langchain.agents import AgentExecutor
 from langchain_openai import OpenAI
 from typing import List, Dict
 from app.core.csv_core import get_tickets_from_csv
