@@ -6,7 +6,7 @@ from langchain.schema import AgentAction, AgentFinish
 
 class PrintPandasAgentHandler(BaseCallbackHandler):
     def __init__(self, container):
-        self.status = container.status("**Loading**")
+        self.status = container.status("Loading from dataframe...")
 
     def on_agent_action(self, action: AgentAction, **kwargs):
         self.status.write(f"{action.log}\n\n")
@@ -35,7 +35,7 @@ class StreamPandasAgentHandler(BaseCallbackHandler):
 
 class PrintRetrievalHandler(BaseCallbackHandler):
     def __init__(self, container):
-        self.status = container.status("**Loading**")
+        self.status = container.status("Loading from database...")
 
     def on_retriever_start(self, serialized: dict, query: str, **kwargs):
         self.status.write(f"**Question:** {query}")

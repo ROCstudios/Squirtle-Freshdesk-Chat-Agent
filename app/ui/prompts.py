@@ -7,7 +7,7 @@ qa_system_prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            "You are an AI assistant that answers user queries based on the conversation history. "
+            "You are an AI assistant that answers user queries based on the context provided. "
             "Use previous messages as context to generate an accurate and concise response. "
             "If you don't have enough context, ask for clarification.",
         ),
