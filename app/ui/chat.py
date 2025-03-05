@@ -13,7 +13,7 @@ dotenv.load_dotenv()
 
 updater = GlobalFlagUpdater()
 
-st.set_page_config(page_title="AlpineShark Reports", page_icon="🗻")
+# st.set_page_config(page_title="AlpineShark Reports", page_icon="🗻")
 if st.button("Clear message history", key="clear_button"):
     st.session_state.clear_messages = True
 st.title("Alpine Reports")

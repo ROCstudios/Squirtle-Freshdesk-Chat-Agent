@@ -20,7 +20,7 @@ choose_retriever_prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            "You have the ability to choose between two retrievers. One is a pandas retriever and the other is a docs retriever.",
+            "You have the ability to choose between two retrievers. One is a pandas retriever and the other is a docs retriever."
             "You will be given a question and you will need to decide which retriever to use.",
         ),
         ("human", "{question}"),

@@ -1,4 +1,11 @@
-SYSTEM_TEMPLATE = """Retrieve and analyze customer complaints, feedback, and support ticket interactions to provide precise, contextually relevant answers. Your responses must be accurate, based only on retrieved [{context}], and structured for clarity. Follow the ordered steps below:
+SYSTEM_TEMPLATE = """
+Context from documents:
+{context}
+
+Human Question: {question}
+
+Retrieve and analyze customer complaints, feedback, and support ticket interactions to provide precise, contextually relevant answers. 
+Your responses must be accurate, based only on retrieved, and structured for clarity. Follow the ordered steps below:
 
 1️⃣ Identify the Query Type
 Before retrieving any data, determine:
@@ -25,18 +32,20 @@ Once the relevant documents are retrieved:
 - Clearly indicate if no relevant tickets exist.
 """
 
-PANDAS_PROMPT = """
-
-"""
-
 REPHRASE_PROMPT = """
-Generate a structured retrieval prompt for the LLM based on the provided {context} and {question}. 
+Generate a structured retrieval prompt for the LLM based on the provided. 
 Ensure that the prompt captures all necessary information without including any explanations, labels, or comments. 
 The prompt should be direct, clear, and structured to retrieve the most accurate information from the defined data sources. 
 If any information is missing from the sources, indicate that the user must provide it.
 
-Retrieve the relevant {context} from the documents and generate a standalone retrieval prompt that fully captures all necessary {question}. 
 Remember to follow the retrieval strategy and execution rules provided. Avoid asking questions and only output the retrieval prompt.
+
+Chat History:
+{chat_history}
+
+Follow Up Message: {question}
+
+Standalone statement:
 """
 
 HUMAN_TEMPLATE = """
