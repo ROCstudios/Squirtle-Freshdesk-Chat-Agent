@@ -5,8 +5,7 @@ import os
 from bs4 import BeautifulSoup
 import re
 import pandas as pd
-
-dotenv.load_dotenv()
+import streamlit as st
 
 # Get the directory of the current script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -15,8 +14,8 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 # Define data directory
 DATA_DIR = os.path.join(PROJECT_ROOT, "app/data")
 
-api_key = os.getenv("FRESHDESK_API_KEY")
-domain = os.getenv("FRESHDESK_DOMAIN")
+api_key = st.secrets["FRESHDESK_API_KEY"]
+domain = st.secrets["FRESHDESK_DOMAIN"]
 
 headers = {"Content-Type": "application/json"}
 

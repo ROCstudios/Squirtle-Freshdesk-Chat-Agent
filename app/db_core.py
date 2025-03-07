@@ -5,22 +5,22 @@ from pinecone import ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from langchain_openai import OpenAIEmbeddings
 from langchain.docstore.document import Document
-from typing import List, Dict, Optional
-from datetime import datetime
+from typing import List, Dict
+import streamlit as st
 
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-api_key = os.environ.get("PINECONE_API_KEY")
-openai_api_key = os.environ.get("OPENAI_API_KEY") or "OPENAI_API_KEY"
+api_key = st.secrets["PINECONE_API_KEY"]
+openai_api_key = st.secrets["OPENAI_API_KEY"]
 model_name = "text-embedding-ada-002"
 
 index_name = "test-freshdesk-tickets"
 # configure client
 pc = Pinecone(api_key=api_key)
-cloud = os.environ.get("PINECONE_CLOUD") or "aws"
-region = os.environ.get("PINECONE_REGION") or "us-east-1"
+cloud = st.secrets["PINECONE_CLOUD"] or "aws"
+region = st.secrets["PINECONE_REGION"] or "us-east-1"
 
 spec = ServerlessSpec(cloud=cloud, region=region)
 

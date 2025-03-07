@@ -46,7 +46,7 @@ if "pandas_retriever" not in st.session_state:
 # Setup LLM and QA chain
 llm = ChatOpenAI(
     model_name="gpt-4o",
-    openai_api_key=os.getenv("OPENAI_API_KEY"),
+    openai_api_key=st.secrets["OPENAI_API_KEY"],
     temperature=0.0,
     streaming=True,
 )

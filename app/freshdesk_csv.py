@@ -2,9 +2,9 @@ import requests
 import pandas as pd
 import dotenv
 import os
-import time
 from csv_core import get_most_recently_updated_date, append_to_csv, save_to_csv
 from freshdesk_core import get_all_tickets, get_ticket_details
+import streamlit as st
 
 # Get the directory of the current script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -13,10 +13,8 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 # Define data directory
 DATA_DIR = os.path.join(PROJECT_ROOT, "app/data")
 
-dotenv.load_dotenv()
-
-FRESHDESK_DOMAIN = os.getenv("FRESHDESK_DOMAIN")
-FRESHDESK_API_KEY = os.getenv("FRESHDESK_API_KEY")
+FRESHDESK_DOMAIN = st.secrets["FRESHDESK_DOMAIN"]
+FRESHDESK_API_KEY = st.secrets["FRESHDESK_API_KEY"]
 
 HEADERS = {"Authorization": f"Basic {FRESHDESK_API_KEY}"}
 

@@ -1,5 +1,4 @@
 from typing import List, Dict
-import dotenv
 import os
 from db_core import upload_to_pinecone, json_to_documents
 from bs4 import BeautifulSoup
@@ -8,7 +7,6 @@ import pandas as pd
 from freshdesk_core import get_all_tickets
 from csv_core import get_most_recently_updated_date
 
-dotenv.load_dotenv()
 
 # Get the directory of the current script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
