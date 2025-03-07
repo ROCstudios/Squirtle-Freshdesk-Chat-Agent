@@ -6,4 +6,3 @@ venv/
 app/venv/
 .devcontainer/
 .env
-app/data/
