@@ -1,7 +1,12 @@
 from langchain.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.prompts import MessagesPlaceholder
-from app.consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE, REPHRASE_PROMPT
+from app.consts import (
+    SYSTEM_TEMPLATE,
+    HUMAN_TEMPLATE,
+    REPHRASE_PROMPT,
+    RETRIEVER_PROMPT,
+)
 
 qa_system_prompt = ChatPromptTemplate.from_messages(
     [
@@ -18,11 +23,7 @@ qa_system_prompt = ChatPromptTemplate.from_messages(
 
 choose_retriever_prompt = ChatPromptTemplate.from_messages(
     [
-        (
-            "system",
-            "You have the ability to choose between two retrievers. One is a pandas retriever and the other is a docs retriever."
-            "You will be given a question and you will need to decide which retriever to use.",
-        ),
+        ("system", RETRIEVER_PROMPT),
         ("human", "{question}"),
     ]
 )

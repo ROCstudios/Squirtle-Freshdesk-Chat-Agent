@@ -1,3 +1,12 @@
+RETRIEVER_PROMPT = """
+When presented with a question, you have the option to select either a pandas retriever or a docs retriever. 
+Use the pandas retriever for questions that specifically reference a number, quantitative values, equations, or formulas. 
+For all other questions, utilize the docs retriever. In cases of uncertainty, default to the docs retriever.
+
+Your task is to determine the most suitable retriever for each question based on the provided guidelines. 
+Please ensure that your selections align with the specific criteria for each retriever. 
+"""
+
 SYSTEM_TEMPLATE = """
 Context from documents:
 {context}
@@ -37,6 +46,10 @@ Generate a structured retrieval prompt for the LLM based on the provided.
 Ensure that the prompt captures all necessary information without including any explanations, labels, or comments. 
 The prompt should be direct, clear, and structured to retrieve the most accurate information from the defined data sources. 
 If any information is missing from the sources, indicate that the user must provide it.
+
+Provide examples if necessary to ensure we are getting high quality results.  
+TAKE YOUR TIME TO GET THE RIGHT INFORMATION.
+Our priority is generate a prompt that will give us the best results.
 
 Remember to follow the retrieval strategy and execution rules provided. Avoid asking questions and only output the retrieval prompt.
 
