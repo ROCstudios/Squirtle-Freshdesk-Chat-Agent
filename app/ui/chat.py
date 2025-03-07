@@ -2,13 +2,11 @@ import streamlit as st
 
 import os
 import dotenv
-from app.datastore.update_flag import GlobalFlagUpdater
+from datastore.update_flag import GlobalFlagUpdater
 from chain import custom_chain, msgs
 import sys
 import os
-from app.pipeline.new_batch_pipeline import get_our_most_recent_tickets
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
+from pipeline.new_batch_pipeline import get_our_most_recent_tickets
 
 dotenv.load_dotenv()
 
