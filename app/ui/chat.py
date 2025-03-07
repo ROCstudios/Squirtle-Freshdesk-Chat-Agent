@@ -1,9 +1,9 @@
 import streamlit as st
 
-from chain import custom_chain, msgs
 import os
 import dotenv
 from app.datastore.update_flag import GlobalFlagUpdater
+from chain import custom_chain, msgs
 import sys
 import os
 from app.pipeline.new_batch_pipeline import get_our_most_recent_tickets
