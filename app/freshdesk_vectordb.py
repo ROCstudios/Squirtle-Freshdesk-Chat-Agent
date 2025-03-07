@@ -1,13 +1,12 @@
 from typing import List, Dict
 import dotenv
-import requests
 import os
-from app.core.db_core import upload_to_pinecone, json_to_documents
+from db_core import upload_to_pinecone, json_to_documents
 from bs4 import BeautifulSoup
 import re
 import pandas as pd
-from app.core.freshdesk_core import get_all_tickets
-from app.core.csv_core import get_most_recently_updated_date
+from freshdesk_core import get_all_tickets
+from csv_core import get_most_recently_updated_date
 
 dotenv.load_dotenv()
 

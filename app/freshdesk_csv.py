@@ -3,8 +3,8 @@ import pandas as pd
 import dotenv
 import os
 import time
-from app.core.csv_core import get_most_recently_updated_date, append_to_csv, save_to_csv
-from app.core.freshdesk_core import get_all_tickets, get_ticket_details
+from csv_core import get_most_recently_updated_date, append_to_csv, save_to_csv
+from freshdesk_core import get_all_tickets, get_ticket_details
 
 # Get the directory of the current script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))

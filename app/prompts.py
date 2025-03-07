@@ -1,7 +1,7 @@
 from langchain.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.prompts import MessagesPlaceholder
-from app.consts import (
+from consts import (
     SYSTEM_TEMPLATE,
     HUMAN_TEMPLATE,
     REPHRASE_PROMPT,

@@ -1,13 +1,13 @@
 import streamlit as st
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
-from app.ui.handlers import (
+from handlers import (
     PrintRetrievalHandler,
     StreamHandler,
     PrintPandasAgentHandler,
     StreamPandasAgentHandler,
 )
-from app.ui.retriever_routing import (
+from retriever_routing import (
     get_doc_retriever_agent,
     get_pandas_agent,
 )
@@ -19,7 +19,7 @@ from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain.schema.output_parser import StrOutputParser
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
-from app.ui.prompts import (
+from prompts import (
     qa_system_prompt,
     choose_retriever_prompt,
     combine_docs_prompt,

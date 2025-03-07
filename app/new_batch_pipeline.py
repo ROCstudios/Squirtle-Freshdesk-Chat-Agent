@@ -1,11 +1,8 @@
-from app.domain.freshdesk_csv import (
+from freshdesk_csv import (
     get_most_recent_tickets_to_append,
     get_all_ticket_details,
 )
-from app.domain.freshdesk_vectordb import get_most_recent_tickets_append_to_vector_db
-from app.datastore.update_flag import GlobalFlagUpdater
-
-updater = GlobalFlagUpdater()
+from freshdesk_vectordb import get_most_recent_tickets_append_to_vector_db
 
 
 def get_our_most_recent_tickets():

@@ -1,26 +1,18 @@
-from app.domain.freshdesk_vectordb import (
+from freshdesk_vectordb import (
     clean_tickets_description_upload_to_pinecone,
 )
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
-from langchain.prompts import PromptTemplate
 from langchain_openai import OpenAI
 from typing import List, Dict
-from app.core.csv_core import get_tickets_from_csv
+from csv_core import get_tickets_from_csv
 import streamlit as st
 import pandas as pd
 import os
 
-
-# Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(script_dir, "..", "data")
+data_dir = os.path.join(script_dir, "data")
 
 llm = OpenAI(temperature=0)
-
-routing_prompt = PromptTemplate(
-    input_variables=["query"],
-    template="Classify this query as 'quantitative' or 'qualitative': {query}",
-)
 
 pandas_agent = None
 docs_agent = None
