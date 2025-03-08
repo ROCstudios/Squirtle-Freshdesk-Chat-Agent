@@ -29,7 +29,7 @@ def get_pandas_agent(
 
 def get_doc_retriever_agent(
     ticket_details: List[Dict] = get_tickets_from_csv(
-        os.path.join(data_dir, "complete_ticket_details.csv")
+        os.path.join(data_dir, "tickets.csv")
     )
 ):
     global docs_agent

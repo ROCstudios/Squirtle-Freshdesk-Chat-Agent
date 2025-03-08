@@ -36,7 +36,6 @@ if index_name not in pc.list_indexes().names():
         spec=spec,
     )
 
-# wait for index to be initialized
 while not pc.describe_index(index_name).status["ready"]:
     time.sleep(1)
 
@@ -47,6 +46,11 @@ print(index.describe_index_stats())
 
 embeddings = OpenAIEmbeddings(model=model_name, openai_api_key=openai_api_key)
 vector_store = PineconeVectorStore(index=index, embedding=embeddings)
+
+
+def upload_to_pinecone_if_no_items():
+    """Upload JSON data to Pinecone and return the index"""
+    return vector_store.count() > 0
 
 
 def upload_to_pinecone(docs, ids):
@@ -86,6 +90,25 @@ def json_to_documents(json_data: List[Dict]) -> List[Document]:
 
     ids = [str(item.get("id")) for item in json_data]
     return documents, ids
+
+
+def get_existing_ticket_ids_from_pinecone() -> set:
+
+    # Fetch all existing vectors' metadata
+    existing_ids = set()
+    all_vector_ids = index.describe_index_stats()["namespaces"][""]["vector_count"]
+
+    # Fetch metadata in batches
+    for i in range(0, all_vector_ids, 100):  # Adjust batch size as needed
+        response = index.fetch(
+            ids=[str(j) for j in range(i, min(i + 100, all_vector_ids))]
+        )
+        for vector_id, vector_data in response["vectors"].items():
+            ticket_id = vector_data["metadata"].get("id")
+            if ticket_id:
+                existing_ids.add(ticket_id)
+
+    return existing_ids
 
 
 if __name__ == "__main__":

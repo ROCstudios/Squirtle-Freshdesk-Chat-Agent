@@ -1,6 +1,10 @@
 from typing import List, Dict
 import os
-from db_core import upload_to_pinecone, json_to_documents
+from db_core import (
+    upload_to_pinecone,
+    json_to_documents,
+    get_existing_ticket_ids_from_pinecone,
+)
 from bs4 import BeautifulSoup
 import re
 import pandas as pd
@@ -16,7 +20,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
 def clean_html_text(html_string: str) -> str:
     """Clean HTML formatting from text, preserving only essential content"""
-    if not html_string:
+    if not html_string or pd.isna(html_string):
         return ""
 
     # Parse HTML and get text content
@@ -31,17 +35,41 @@ def clean_html_text(html_string: str) -> str:
     return text
 
 
-def clean_tickets_description_upload_to_pinecone(tickets: List[Dict]):
-    for item in tickets:
-        clean_description = clean_html_text(item.get("description_text", ""))
-        item["description_text"] = clean_description
+def clean_tickets_description_upload_to_pinecone(
+    tickets: List[Dict], batch_size: int = 100
+):
+    existing_ticket_ids = get_existing_ticket_ids_from_pinecone()
 
-    try:
-        docs, ids = json_to_documents(tickets)
-        store = upload_to_pinecone(docs, ids)
-        return store
-    except Exception as e:
-        print(f"Error: {e}")
+    # Process tickets in batches
+    for i in range(0, len(tickets), batch_size):
+        batch = tickets[i : i + batch_size]
+        filtered_batch = []
+
+        for item in batch:
+            ticket_id = item.get("id")
+            if ticket_id in existing_ticket_ids:
+                continue
+
+            clean_description = clean_html_text(item.get("description_text", ""))
+            item["description_text"] = clean_description
+
+            # Check metadata size
+            metadata_size = len(str(item))
+            if metadata_size <= 40960:  # Ensure metadata size is within limit
+                filtered_batch.append(item)
+            else:
+                print(f"Skipping ticket ID {ticket_id} due to metadata size")
+
+        if not filtered_batch:
+            continue
+
+        try:
+            docs, ids = json_to_documents(filtered_batch)
+            store = upload_to_pinecone(docs, ids)
+            print(f"Uploaded batch of {len(filtered_batch)} tickets to vector database")
+            return store
+        except Exception as e:
+            print(f"Error uploading batch: {e}")
 
 
 def paginate_all_tickets_to_pinecone(per_page: int = 25):

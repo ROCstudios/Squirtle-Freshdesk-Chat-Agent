@@ -10,6 +10,7 @@ from new_batch_pipeline import get_our_most_recent_tickets
 # st.set_page_config(page_title="AlpineShark Reports", page_icon="🗻")
 if st.button("Clear message history", key="clear_button"):
     st.session_state.clear_messages = True
+
 st.title("AlpineShark Reports")
 
 st.sidebar.title("Get Updated Tickets")
