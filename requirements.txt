@@ -19,3 +19,5 @@ pinecone
 langchain-pinecone
 beautifulsoup4
 tabulate
+langchain-community
+langchain-experimental
