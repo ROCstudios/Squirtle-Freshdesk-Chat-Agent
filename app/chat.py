@@ -1,7 +1,6 @@
 import streamlit as st
 
 import os
-import dotenv
 from chain import custom_chain, msgs
 import sys
 import os

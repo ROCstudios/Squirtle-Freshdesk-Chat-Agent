@@ -29,7 +29,7 @@ def get_pandas_agent(
 
 def get_doc_retriever_agent(
     ticket_details: List[Dict] = get_tickets_from_csv(
-        os.path.join(data_dir, "tickets.csv")
+        os.path.join(data_dir, "complete_ticket_details.csv")
     )
 ):
     global docs_agent
@@ -60,7 +60,7 @@ def configure_retriever_from_docs(ticket_details: List[Dict]):
     docs_agent = clean_tickets_description_upload_to_pinecone(ticket_details)
 
     retriever = docs_agent.as_retriever(
-        search_type="mmr", search_kwargs={"k": 2, "fetch_k": 4}
+        search_type="similarity", search_kwargs={"k": 12}
     )
 
     return retriever
