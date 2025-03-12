@@ -133,7 +133,7 @@ def get_most_recent_tickets_to_append(file_path: str = "tickets.csv"):
 
         if response.status_code == 200:
             append_to_csv(response, csv_path)
-            return csv_path
+            return csv_path, response
         else:
             print(f"Error fetching tickets: {response.status_code}")
             return None

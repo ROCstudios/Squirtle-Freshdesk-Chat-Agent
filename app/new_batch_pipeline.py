@@ -6,10 +6,10 @@ from freshdesk_vectordb import get_most_recent_tickets_append_to_vector_db
 
 
 def get_our_most_recent_tickets():
-    file_path = get_most_recent_tickets_to_append("tickets.csv")
+    file_path, response = get_most_recent_tickets_to_append("tickets.csv")
     # ticket_details = get_all_ticket_details(file_path, "tickets.csv")
     get_most_recent_tickets_append_to_vector_db()
-    return ticket_details
+    return response
 
 
 if __name__ == "__main__":

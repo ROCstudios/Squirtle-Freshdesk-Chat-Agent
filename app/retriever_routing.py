@@ -38,13 +38,11 @@ def get_doc_retriever_agent(
 
 @st.cache_resource
 def configure_retriever_from_pandas(file_path: str):
-    tickets_details_df = pd.read_csv(file_path)
-    tickets_details_df = tickets_details_df.drop(
-        columns=["description", "description_text"], errors="ignore"
-    )
+    tickets = pd.read_csv(file_path)
+    tickets = tickets.drop(columns=["description", "description_text"], errors="ignore")
     local_pandas_agent = create_pandas_dataframe_agent(
         llm,
-        tickets_details_df,
+        tickets,
         verbose=True,
         allow_dangerous_code=True,
     )
