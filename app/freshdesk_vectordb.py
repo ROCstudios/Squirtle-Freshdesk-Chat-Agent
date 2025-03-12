@@ -16,6 +16,7 @@ from csv_core import get_most_recently_updated_date
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # Get the project root directory (one level up from script directory)
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 
 
 def clean_html_text(html_string: str) -> str:
@@ -108,8 +109,10 @@ def paginate_all_tickets_to_pinecone(per_page: int = 25):
     return tickets
 
 
-def get_most_recent_tickets_append_to_vector_db():
-    updated_from = get_most_recently_updated_date()
+def get_most_recent_tickets_append_to_vector_db(
+    file_path: str = os.path.join(DATA_DIR, "tickets.csv")
+):
+    updated_from = get_most_recently_updated_date(file_path)
     if updated_from:
         response = get_all_tickets(updated_since=updated_from)
 

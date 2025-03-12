@@ -21,3 +21,4 @@ beautifulsoup4
 tabulate
 langchain-community
 langchain-experimental
+setuptools

@@ -113,7 +113,19 @@ def get_all_ticket_details(
         return details_file_path
 
 
-def get_most_recent_tickets_to_append(file_path: str = "complete_ticket_details.csv"):
+def get_ticket_details_inclusive_range_with_id(start_id: int, end_id: int):
+    ticket_details = []
+    tickets_df = pd.read_csv(os.path.join(DATA_DIR, "tickets.csv"))
+    ticket_ids = tickets_df["id"].tolist()
+
+    for ticket_id in ticket_ids:
+        if ticket_id >= start_id and ticket_id <= end_id:
+            ticket_details.append(get_ticket_details(ticket_id))
+
+    return [ticket["id"] for ticket in ticket_details]
+
+
+def get_most_recent_tickets_to_append(file_path: str = "tickets.csv"):
     csv_path = os.path.join(DATA_DIR, file_path)
     updated_from = get_most_recently_updated_date(csv_path)
     if updated_from:

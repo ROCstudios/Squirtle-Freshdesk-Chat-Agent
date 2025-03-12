@@ -18,9 +18,7 @@ pandas_agent = None
 docs_agent = None
 
 
-def get_pandas_agent(
-    file_path: str = os.path.join(data_dir, "complete_ticket_details.csv")
-):
+def get_pandas_agent(file_path: str = os.path.join(data_dir, "tickets.csv")):
     global pandas_agent
     if pandas_agent is None:
         pandas_agent = configure_retriever_from_pandas(file_path)
@@ -29,7 +27,7 @@ def get_pandas_agent(
 
 def get_doc_retriever_agent(
     ticket_details: List[Dict] = get_tickets_from_csv(
-        os.path.join(data_dir, "complete_ticket_details.csv")
+        os.path.join(data_dir, "tickets.csv")
     )
 ):
     global docs_agent

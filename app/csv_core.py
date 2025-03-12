@@ -50,7 +50,7 @@ def append_to_csv(data, file_path):
 
 
 def get_most_recently_updated_date(file_path):
-    df = pd.read_csv(os.path.join(DATA_DIR, file_path))
+    df = pd.read_csv(file_path)
     df["updated_at"] = pd.to_datetime(
         df["updated_at"], errors="coerce"
     )  # Convert to datetime, coerce errors
