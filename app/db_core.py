@@ -16,7 +16,7 @@ api_key = st.secrets["PINECONE_API_KEY"]
 openai_api_key = st.secrets["OPENAI_API_KEY"]
 model_name = "text-embedding-ada-002"
 
-index_name = "test-freshdesk-tickets"
+index_name = "freshdesk-tickets-v1"
 # configure client
 pc = Pinecone(api_key=api_key)
 cloud = st.secrets["PINECONE_CLOUD"] or "aws"
