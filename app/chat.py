@@ -1,10 +1,10 @@
 import streamlit as st
 
 import os
-from app.chain import custom_chain, msgs
+from chain import custom_chain, msgs
 import sys
 import os
-from app.new_batch_pipeline import get_our_most_recent_tickets
+from new_batch_pipeline import get_our_most_recent_tickets
 
 # st.set_page_config(page_title="AlpineShark Reports", page_icon="🗻")
 if st.button("Clear message history", key="clear_button"):
