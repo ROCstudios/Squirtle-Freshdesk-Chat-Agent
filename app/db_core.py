@@ -16,7 +16,7 @@ api_key = st.secrets["PINECONE_API_KEY"]
 openai_api_key = st.secrets["OPENAI_API_KEY"]
 model_name = "text-embedding-ada-002"
 
-index_name = "freshdesk-tickets-v1"
+index_name = "freshdesk-tickets-v2"
 # configure client
 pc = Pinecone(api_key=api_key)
 cloud = st.secrets["PINECONE_CLOUD"] or "aws"
@@ -25,7 +25,7 @@ region = st.secrets["PINECONE_REGION"] or "us-east-1"
 spec = ServerlessSpec(cloud=cloud, region=region)
 
 # if index_name in pc.list_indexes().names():
-# pc.delete_index(index_name)
+#     pc.delete_index(index_name)
 
 # we create a new index if one has not been created already
 if index_name not in pc.list_indexes().names():
@@ -67,6 +67,9 @@ def json_to_documents(json_data: List[Dict]) -> List[Document]:
         Subject: {item.get('subject', '')}
         Description: {item.get('description_text', '')}
         """
+
+        # Set a default status
+        item_status = "Unknown"
 
         if item.get("status") == 2:
             item_status = "Open"
